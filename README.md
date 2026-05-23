@@ -1,131 +1,114 @@
-# Servicio Docker para clasificación médica simulada
+# Esteban-Oliveros-MLOps-U2
 
-## Finalidad
+## Problema
 
-Este proyecto contiene un servicio sencillo en Python y Flask para simular el uso de un modelo de machine learning en el contexto de enfermedades comunes y enfermedades huérfanas.
+En medicina existe una gran cantidad de información clínica de pacientes. Sin embargo, para algunas enfermedades poco comunes, conocidas como enfermedades huérfanas, los datos disponibles son escasos.
 
-El servicio recibe una lista con tres valores ingresados por el médico:
+Este repositorio contiene una solución académica simplificada para simular un servicio de predicción médica usando MLOps, Python, Flask, Docker y GitHub.
 
-```text
-[temperatura, nivel_dolor, dias_sintomas]
-```
+## Propósito de la solución
 
-Con esos datos retorna uno de los siguientes estados:
+El propósito es exponer un servicio web que recibe tres datos básicos del paciente y retorna una categoría simulada de estado de salud.
+
+La solución no corresponde a un modelo médico real. Es una simulación académica para practicar despliegue, control de versiones, ramas, commits, pull requests y Docker.
+
+## Estructura del repositorio
+
+- app.py: contiene la aplicación Flask, la función simulada de clasificación, el endpoint /predecir y el endpoint /reporte.
+- requirements.txt: contiene la dependencia principal del proyecto: Flask.
+- Dockerfile: contiene las instrucciones para construir la imagen Docker.
+- README.md: contiene la explicación del proyecto y las instrucciones de uso.
+
+## Categorías de predicción
+
+El servicio puede retornar cinco categorías:
 
 - NO ENFERMO
 - ENFERMEDAD LEVE
 - ENFERMEDAD AGUDA
 - ENFERMEDAD CRÓNICA
+- ENFERMEDAD TERMINAL
 
-El modelo es una función simulada. No corresponde a un diagnóstico médico real.
+## Entrada del modelo simulado
 
-## Estructura del directorio
+El médico debe enviar una lista con tres valores:
 
-```text
-punto2_docker_simple/
-├── app.py
-├── requirements.txt
-├── Dockerfile
-└── README.md
-```
+[temperatura, nivel_dolor, dias_sintomas]
 
-## Descripción de archivos
+Ejemplo de entrada JSON:
 
-- `app.py`: contiene la aplicación Flask, el punto final `/predecir` y la función simulada `predecir_estado`.
-- `requirements.txt`: contiene la dependencia necesaria para ejecutar la aplicación.
-- `Dockerfile`: contiene las instrucciones para construir la imagen Docker.
-- `README.md`: contiene las instrucciones de uso.
+{
+  "valores": [37.8, 4, 3]
+}
 
 ## Construir la imagen Docker
 
-Desde la carpeta del proyecto, ejecutar:
+Desde la carpeta del repositorio, ejecutar:
 
-```bash
-docker build -t clasificador-medico-simple:1.0 .
-```
+docker build -t clasificador-medico-simple:2.0 .
 
 ## Correr el contenedor
 
 Ejecutar:
 
-```bash
-docker run -p 5000:5000 clasificador-medico-simple:1.0
-```
+docker run --rm -p 5001:5000 clasificador-medico-simple:2.0
 
-El servicio quedará disponible en:
+El servicio queda disponible en:
 
-```text
-http://localhost:5000
-```
+http://localhost:5001
 
-## Obtener una respuesta del modelo
+## Endpoint de predicción
 
-El médico debe enviar una solicitud `POST` al punto final:
+URL:
 
-```text
-http://localhost:5000/predecir
-```
+POST http://localhost:5001/predecir
 
-El cuerpo de la solicitud debe tener la siguiente forma:
+Ejemplo:
 
-```json
-{
-  "valores": [37.8, 4, 3]
-}
-```
-
-Donde:
-
-1. `37.8` representa la temperatura corporal.
-2. `4` representa el nivel de dolor en una escala de 0 a 10.
-3. `3` representa los días con síntomas.
-
-## Ejemplos de uso con curl
-
-### 1. NO ENFERMO
-
-```bash
-curl -X POST http://localhost:5000/predecir \
-  -H "Content-Type: application/json" \
-  -d '{"valores": [36.5, 1, 1]}'
-```
-
-### 2. ENFERMEDAD LEVE
-
-```bash
-curl -X POST http://localhost:5000/predecir \
+curl -X POST http://localhost:5001/predecir \
   -H "Content-Type: application/json" \
   -d '{"valores": [37.8, 4, 3]}'
-```
 
-### 3. ENFERMEDAD AGUDA
+## Endpoint de reporte
 
-```bash
-curl -X POST http://localhost:5000/predecir \
-  -H "Content-Type: application/json" \
-  -d '{"valores": [39.2, 8, 5]}'
-```
+URL:
 
-### 4. ENFERMEDAD CRÓNICA
+GET http://localhost:5001/reporte
 
-```bash
-curl -X POST http://localhost:5000/predecir \
-  -H "Content-Type: application/json" \
-  -d '{"valores": [37.8, 5, 45]}'
-```
+Ejemplo:
 
-## Respuesta esperada
+curl http://localhost:5001/reporte
 
-El servicio responde en formato JSON. Ejemplo:
+El reporte retorna:
 
-```json
-{
-  "estado": "ENFERMEDAD LEVE",
-  "nota": "Modelo simulado con fines académicos. No corresponde a diagnóstico médico real.",
-  "valores_recibidos": [37.8, 4, 3]
-}
-```
+- número total de predicciones realizadas;
+- número de predicciones realizadas por cada categoría;
+- últimas 5 predicciones realizadas;
+- fecha de la última predicción.
 
-## Detener el contenedor
+## Flujo de versionamiento usado
 
-Para detener el contenedor, presionar `CTRL + C` en la terminal donde está corriendo.
+El repositorio fue construido mediante ramas, commits y pull requests:
+
+- main: README inicial del proyecto.
+- solución-inicial: incorporación inicial de app.py, requirements.txt, Dockerfile y actualización del README.md.
+- PR #1: integración de solución-inicial a main.
+- segunda-versión: incorporación de ENFERMEDAD TERMINAL y endpoint /reporte.
+- PR #2: integración de segunda-versión a main.
+
+## Conceptos MLOps aplicados
+
+- Versionamiento de código con Git y GitHub.
+- Uso de ramas para separar cambios.
+- Pull requests para integrar nuevas versiones.
+- Dockerfile para construir una imagen reproducible.
+- Contenedor Docker para ejecutar el servicio.
+- Endpoint /predecir para consumir el modelo simulado.
+- Endpoint /reporte para observabilidad básica de las predicciones.
+- README como documentación central del proyecto.
+
+## Nota académica
+
+Este proyecto es una simulación académica.
+
+No debe usarse para diagnóstico clínico real.
