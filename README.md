@@ -1,26 +1,131 @@
-# Esteban-Oliveros-MLOps-U2
-Repositorio académico para solución MLOps con Flask, Docker y control de versiones en GitHub.
+# Servicio Docker para clasificación médica simulada
 
-## Problema
+## Finalidad
 
-En el campo de la medicina existe una gran cantidad de información clínica de pacientes. Sin embargo, para algunas enfermedades poco comunes, conocidas como enfermedades huérfanas, los datos disponibles son escasos.
+Este proyecto contiene un servicio sencillo en Python y Flask para simular el uso de un modelo de machine learning en el contexto de enfermedades comunes y enfermedades huérfanas.
 
-El objetivo general de esta solución es simular un servicio que apoye la predicción del estado de salud de un paciente a partir de síntomas básicos.
+El servicio recibe una lista con tres valores ingresados por el médico:
 
-## Propósito del repositorio
+```text
+[temperatura, nivel_dolor, dias_sintomas]
+```
 
-Este repositorio tiene como propósito organizar y versionar una solución simplificada de MLOps para un servicio de clasificación médica.
+Con esos datos retorna uno de los siguientes estados:
 
-La solución utilizará Python, Flask y Docker para exponer un endpoint que recibe datos clínicos básicos y retorna una categoría simulada de estado de salud.
+- NO ENFERMO
+- ENFERMEDAD LEVE
+- ENFERMEDAD AGUDA
+- ENFERMEDAD CRÓNICA
 
-## Estructura inicial
+El modelo es una función simulada. No corresponde a un diagnóstico médico real.
 
-Inicialmente, la rama principal contiene este archivo README.md, donde se describe el problema, el propósito del repositorio y la estructura esperada del proyecto.
+## Estructura del directorio
 
-En ramas posteriores se agregará la solución Docker con los archivos necesarios para ejecutar el servicio localmente.
+```text
+punto2_docker_simple/
+├── app.py
+├── requirements.txt
+├── Dockerfile
+└── README.md
+```
 
-## Flujo de trabajo
+## Descripción de archivos
 
-El desarrollo se realizará mediante ramas, commits y pull requests.
+- `app.py`: contiene la aplicación Flask, el punto final `/predecir` y la función simulada `predecir_estado`.
+- `requirements.txt`: contiene la dependencia necesaria para ejecutar la aplicación.
+- `Dockerfile`: contiene las instrucciones para construir la imagen Docker.
+- `README.md`: contiene las instrucciones de uso.
 
-Cada nueva funcionalidad será integrada a la rama principal mediante un PR y su respectivo merge.
+## Construir la imagen Docker
+
+Desde la carpeta del proyecto, ejecutar:
+
+```bash
+docker build -t clasificador-medico-simple:1.0 .
+```
+
+## Correr el contenedor
+
+Ejecutar:
+
+```bash
+docker run -p 5000:5000 clasificador-medico-simple:1.0
+```
+
+El servicio quedará disponible en:
+
+```text
+http://localhost:5000
+```
+
+## Obtener una respuesta del modelo
+
+El médico debe enviar una solicitud `POST` al punto final:
+
+```text
+http://localhost:5000/predecir
+```
+
+El cuerpo de la solicitud debe tener la siguiente forma:
+
+```json
+{
+  "valores": [37.8, 4, 3]
+}
+```
+
+Donde:
+
+1. `37.8` representa la temperatura corporal.
+2. `4` representa el nivel de dolor en una escala de 0 a 10.
+3. `3` representa los días con síntomas.
+
+## Ejemplos de uso con curl
+
+### 1. NO ENFERMO
+
+```bash
+curl -X POST http://localhost:5000/predecir \
+  -H "Content-Type: application/json" \
+  -d '{"valores": [36.5, 1, 1]}'
+```
+
+### 2. ENFERMEDAD LEVE
+
+```bash
+curl -X POST http://localhost:5000/predecir \
+  -H "Content-Type: application/json" \
+  -d '{"valores": [37.8, 4, 3]}'
+```
+
+### 3. ENFERMEDAD AGUDA
+
+```bash
+curl -X POST http://localhost:5000/predecir \
+  -H "Content-Type: application/json" \
+  -d '{"valores": [39.2, 8, 5]}'
+```
+
+### 4. ENFERMEDAD CRÓNICA
+
+```bash
+curl -X POST http://localhost:5000/predecir \
+  -H "Content-Type: application/json" \
+  -d '{"valores": [37.8, 5, 45]}'
+```
+
+## Respuesta esperada
+
+El servicio responde en formato JSON. Ejemplo:
+
+```json
+{
+  "estado": "ENFERMEDAD LEVE",
+  "nota": "Modelo simulado con fines académicos. No corresponde a diagnóstico médico real.",
+  "valores_recibidos": [37.8, 4, 3]
+}
+```
+
+## Detener el contenedor
+
+Para detener el contenedor, presionar `CTRL + C` en la terminal donde está corriendo.
