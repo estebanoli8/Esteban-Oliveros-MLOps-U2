@@ -1,8 +1,21 @@
 from flask import Flask, request, Response
 import json
 from datetime import datetime
+from pathlib import Path
+from collections import Counter
 
 app = Flask(__name__)
+
+ARCHIVO_PREDICCIONES = Path("predicciones.jsonl")
+
+CATEGORIAS = [
+    "NO ENFERMO",
+    "ENFERMEDAD LEVE",
+    "ENFERMEDAD AGUDA",
+    "ENFERMEDAD CRÓNICA",
+    "ENFERMEDAD TERMINAL"
+]
+
 
 def clasificar_estado(valores):
     """
@@ -37,21 +50,36 @@ def responder_json(contenido, codigo=200):
     )
 
 
+def guardar_prediccion(registro):
+    with ARCHIVO_PREDICCIONES.open("a", encoding="utf-8") as archivo:
+        archivo.write(json.dumps(registro, ensure_ascii=False) + "\n")
+
+
+def leer_predicciones():
+    if not ARCHIVO_PREDICCIONES.exists():
+        return []
+
+    predicciones = []
+
+    with ARCHIVO_PREDICCIONES.open("r", encoding="utf-8") as archivo:
+        for linea in archivo:
+            linea = linea.strip()
+            if linea:
+                predicciones.append(json.loads(linea))
+
+    return predicciones
+
+
 @app.route("/", methods=["GET"])
 def inicio():
     return responder_json({
         "mensaje": "Servicio de clasificación médica simulado activo",
         "endpoint_prediccion": "/predecir",
+        "endpoint_reporte": "/reporte",
         "formato_entrada": {
             "valores": ["temperatura", "nivel_dolor", "dias_sintomas"]
         },
-        "categorias": [
-            "NO ENFERMO",
-            "ENFERMEDAD LEVE",
-            "ENFERMEDAD AGUDA",
-            "ENFERMEDAD CRÓNICA",
-            "ENFERMEDAD TERMINAL"
-        ]
+        "categorias": CATEGORIAS
     })
 
 
@@ -84,11 +112,46 @@ def predecir():
             "error": "Todos los valores deben ser numéricos."
         }, 400)
 
+    fecha_prediccion = datetime.now().isoformat(timespec="seconds")
+
+    registro = {
+        "estado": estado,
+        "valores_recibidos": valores,
+        "fecha_prediccion": fecha_prediccion
+    }
+
+    guardar_prediccion(registro)
+
     return responder_json({
         "estado": estado,
         "valores_recibidos": valores,
-        "fecha_prediccion": datetime.now().isoformat(),
+        "fecha_prediccion": fecha_prediccion,
         "nota": "Resultado simulado para fines académicos. No corresponde a diagnóstico médico real."
+    })
+
+
+@app.route("/reporte", methods=["GET"])
+def reporte():
+    predicciones = leer_predicciones()
+
+    conteo = Counter(prediccion["estado"] for prediccion in predicciones)
+
+    totales_por_categoria = {
+        categoria: conteo.get(categoria, 0)
+        for categoria in CATEGORIAS
+    }
+
+    ultimas_5 = predicciones[-5:]
+
+    fecha_ultima_prediccion = None
+    if predicciones:
+        fecha_ultima_prediccion = predicciones[-1]["fecha_prediccion"]
+
+    return responder_json({
+        "total_predicciones": len(predicciones),
+        "totales_por_categoria": totales_por_categoria,
+        "ultimas_5_predicciones": ultimas_5,
+        "fecha_ultima_prediccion": fecha_ultima_prediccion
     })
 
 
