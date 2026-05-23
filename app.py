@@ -1,5 +1,6 @@
 from flask import Flask, request, Response
 import json
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -12,6 +13,9 @@ def clasificar_estado(valores):
     temperatura = float(valores[0])
     nivel_dolor = float(valores[1])
     dias_sintomas = float(valores[2])
+
+    if temperatura >= 40 or nivel_dolor >= 9 or (dias_sintomas >= 90 and nivel_dolor >= 7):
+        return "ENFERMEDAD TERMINAL"
 
     if dias_sintomas >= 30 and (temperatura >= 37.5 or nivel_dolor >= 4):
         return "ENFERMEDAD CRÓNICA"
@@ -37,10 +41,17 @@ def responder_json(contenido, codigo=200):
 def inicio():
     return responder_json({
         "mensaje": "Servicio de clasificación médica simulado activo",
-        "endpoint": "/predecir",
+        "endpoint_prediccion": "/predecir",
         "formato_entrada": {
             "valores": ["temperatura", "nivel_dolor", "dias_sintomas"]
-        }
+        },
+        "categorias": [
+            "NO ENFERMO",
+            "ENFERMEDAD LEVE",
+            "ENFERMEDAD AGUDA",
+            "ENFERMEDAD CRÓNICA",
+            "ENFERMEDAD TERMINAL"
+        ]
     })
 
 
@@ -76,6 +87,7 @@ def predecir():
     return responder_json({
         "estado": estado,
         "valores_recibidos": valores,
+        "fecha_prediccion": datetime.now().isoformat(),
         "nota": "Resultado simulado para fines académicos. No corresponde a diagnóstico médico real."
     })
 
