@@ -112,3 +112,52 @@ El repositorio fue construido mediante ramas, commits y pull requests:
 Este proyecto es una simulación académica.
 
 No debe usarse para diagnóstico clínico real.
+
+## Pipeline CI/CD con GitHub Actions
+
+La solución incluye un workflow de GitHub Actions definido en:
+
+.github/workflows/ci-cd.yml
+
+Este pipeline automatiza tareas de integración continua y despliegue continuo para la solución.
+
+### Evento pull_request hacia main
+
+Cuando se crea un pull request contra la rama main, el pipeline realiza las siguientes tareas:
+
+- comenta automáticamente en el PR: "CI/CD en acción. Ejecutando tareas …";
+- descarga el código del repositorio;
+- configura Python;
+- instala las dependencias;
+- ejecuta pruebas unitarias con pytest;
+- comenta automáticamente en el PR: "CI/CD terminado con éxito."
+
+### Evento push hacia main
+
+Cuando los cambios llegan a la rama main, el pipeline realiza las siguientes tareas:
+
+- descarga el código del repositorio;
+- configura Python;
+- instala las dependencias;
+- ejecuta nuevamente las pruebas unitarias;
+- inicia sesión en GitHub Container Registry;
+- construye la imagen Docker;
+- publica la imagen en GitHub Packages.
+
+### Pruebas unitarias
+
+Las pruebas unitarias están definidas en el archivo:
+
+test_app.py
+
+Estas pruebas verifican:
+
+- que el modelo simulado pueda retornar las cinco categorías;
+- que el endpoint /reporte funcione correctamente después de una predicción.
+
+### Imagen publicada
+
+La imagen Docker publicada por el pipeline puede descargarse desde GitHub Container Registry con:
+
+docker pull ghcr.io/estebanoli8/clasificador-medico-simple:latest
+
